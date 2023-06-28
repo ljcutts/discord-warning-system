@@ -1,0 +1,5 @@
+Warning System
+A slash command that can be used to gives people strikes for doing bad deeds in the discord 
+If they get three strikes within 30 days, they will get banned
+Their strikes will get tracked in the Postgres Database, but will reset after 30 days
+Only Mods/Team can use this warning system
