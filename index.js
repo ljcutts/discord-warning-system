@@ -44,10 +44,10 @@ client.on(Events.InteractionCreate, async(interaction) => {
     return;
   }
   try {
-		await command.execute(interaction);
+		await command.execute(interaction)
 		const member = interaction.options.data[0].user.username;
 		const id = interaction.options.data[0].user.id
-	    const strikeAmount = await main(member, Number(id))
+	    const strikeAmount = await main(member, String(id))
         if(strikeAmount > 2) {
 			await interaction.reply({content: `YOU HAVE BEEN BANNED`, ephemeral: true});
 			await interaction.guild.members.ban(id);

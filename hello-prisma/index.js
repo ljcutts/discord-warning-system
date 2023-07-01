@@ -1,40 +1,47 @@
 const { PrismaClient } = require("@prisma/client")
 
 const prisma = new PrismaClient();
+
 async function main(name,id) {
    try {
-     let doesUserExist = await prisma.user.findUnique({ where: { id: id } });
-     const updateStrikeCounter = doesUserExist ? doesUserExist.strikeCounter + 1 : null;
+     let doesUserExist = await prisma.discordUser.findUnique({ where: { id: id }, include:{warnings:true} });
      if (!doesUserExist) {
-       await prisma.user.create({
+       await prisma.discordUser.create({
          data: {
            id: id,
-           username: name,
-           strikeCounter: 1,
+           username: name
          },
        });
+     await prisma.warning.create({
+        data: {
+          discordUserId: id,
+          strikeCounters: [new Date()]
+        }
+      })
      } else {
-       const date = new Date();
-       const newDate = new Date(
-         doesUserExist.timestampSinceFirstStrike.getTime() +
-           30 * 24 * 60 * 60 * 1000
-       );
-       if (date.getTime() >= newDate.getTime()) {
-         await prisma.user.update({
-           where: { id: id },
-           data: { strikeCounter: 1, timestampSinceFirstStrike: new Date()}
-         });
-       } else {
-         await prisma.user.update({
-           where: { id: id },
-           data: { strikeCounter: updateStrikeCounter },
-         });
-       }
+      const date = new Date();
+      let strikeArray = []
+      for(let i = 0; i<doesUserExist.warnings.strikeCounters.length; i++) {
+        let newDate = new Date(
+          doesUserExist.warnings.strikeCounters[i].getTime() +
+            30 * 24 * 60 * 60 * 1000
+        );
+        const past30Days = date.getTime() >= newDate.getTime()
+        if(!past30Days) strikeArray.push(doesUserExist.warnings.strikeCounters[i]);
+      }
+      strikeArray.push(new Date())
+      await prisma.warning.update({
+        where: { discordUserId: id },
+        data: { strikeCounters: strikeArray  }
+      });
      }
-     doesUserExist = await prisma.user.findUnique({ where: { id: id } });
-     const newStrikeCounter = doesUserExist.strikeCounter
+     doesUserExist = await prisma.discordUser.findUnique({
+       where: { id: id },
+       include: { warnings: true },
+     });
+     const newStrikeLength = doesUserExist.warnings.strikeCounters.length
      await prisma.$disconnect();
-     return newStrikeCounter !== null ? newStrikeCounter : 1;
+     return newStrikeLength
    } catch (error) {
        console.error(error);
        await prisma.$disconnect();

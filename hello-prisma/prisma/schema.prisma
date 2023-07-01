@@ -10,10 +10,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-model User {
-  id   BigInt  @id 
+model DiscordUser {
+  id   String @id
   username String
-  strikeCounter Int 
-  timestampSinceFirstStrike DateTime @default(now())
+  warnings Warning?
+}
+
+model Warning {
+  id         Int     @id @default(autoincrement())
+  discordUserId String  @unique
+  strikeCounters DateTime[] 
+  discordUser   DiscordUser @relation(fields: [discordUserId], references: [id])
 }
