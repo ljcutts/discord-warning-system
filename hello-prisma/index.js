@@ -5,13 +5,13 @@ const prisma = new PrismaClient();
 async function main(name,id) {
    try {
      let doesUserExist = await prisma.discordUser.findUnique({ where: { id: id }, include:{warnings:true} });
-     if (!doesUserExist) {
-       await prisma.discordUser.create({
-         data: {
-           id: id,
-           username: name
-         },
-       });
+     if (!doesUserExist.warnings) {
+      //  await prisma.discordUser.create({
+      //    data: {
+      //      id: id,
+      //      username: name
+      //    },
+      //  });
      await prisma.warning.create({
         data: {
           discordUserId: id,
@@ -40,6 +40,7 @@ async function main(name,id) {
        include: { warnings: true },
      });
      const newStrikeLength = doesUserExist.warnings.strikeCounters.length
+     if(newStrikeLength > 2) await prisma.warning.delete({where: {discordUserId:id}})
      await prisma.$disconnect();
      return newStrikeLength
    } catch (error) {

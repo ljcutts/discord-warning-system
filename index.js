@@ -35,6 +35,10 @@ client.once(Events.ClientReady, (c) => {
   console.log(`Ready! Logged in as ${c.user.tag}`);
 });
 
+client.on(Events.GuildBanAdd, async(guild, user) => {
+  console.log(`${user.tag} was banned from ${guild.name}`);
+});
+
 
 client.on(Events.InteractionCreate, async(interaction) => {
   if (!interaction.isChatInputCommand()) return;
