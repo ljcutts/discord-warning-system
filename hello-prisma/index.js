@@ -2,16 +2,10 @@ const { PrismaClient } = require("@prisma/client")
 
 const prisma = new PrismaClient();
 
-async function main(name,id) {
+async function manageUserWarnings(id) {
    try {
      let doesUserExist = await prisma.discordUser.findUnique({ where: { id: id }, include:{warnings:true} });
      if (!doesUserExist.warnings) {
-      //  await prisma.discordUser.create({
-      //    data: {
-      //      id: id,
-      //      username: name
-      //    },
-      //  });
      await prisma.warning.create({
         data: {
           discordUserId: id,
@@ -50,4 +44,9 @@ async function main(name,id) {
    }
 }
 
-module.exports = {main}
+async function deleteUserWarnings(id) {
+   const warningExist = await prisma.warning.findUnique({where: {discordUserId:id}});
+   if(warningExist) await prisma.warning.delete({ where: { discordUserId: id } });
+}
+
+module.exports = {manageUserWarnings, deleteUserWarnings}
